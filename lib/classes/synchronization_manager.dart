@@ -1,11 +1,17 @@
+import 'local_store.dart';
+import 'content_model.dart';
+import 'contentful_client.dart';
+
 class SynchronizationManager {
   final ContentfulClient contentfulClient;
   final LocalStore localStore;
-  final Map<String, ContentModel Function(Map<String, dynamic>)> contentModelFactories = {};
+  final Map<String, ContentModel Function(Map<String, dynamic>)>
+      contentModelFactories = {};
 
   SynchronizationManager(this.contentfulClient, this.localStore);
 
-  void registerContentModel(String contentType, ContentModel Function(Map<String, dynamic>) factory) {
+  void registerContentModel(
+      String contentType, ContentModel Function(Map<String, dynamic>) factory) {
     contentModelFactories[contentType] = factory;
   }
 
