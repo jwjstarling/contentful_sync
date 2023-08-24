@@ -1,4 +1,8 @@
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
-library contentful_sync;
+
+export 'classes/content_model.dart';
+export 'classes/contentful_client.dart';
+export 'classes/synchronization_manager.dart';
+export 'classes/local_store.dart';

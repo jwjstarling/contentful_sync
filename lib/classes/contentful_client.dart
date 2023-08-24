@@ -18,7 +18,7 @@ class ContentfulClient {
 
   Future<void> _storeNextSyncUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('nextSyncUrl', url);
+    prefs.setString('nextSyncUrl', "$url&access_token=$accessToken");
   }
 
   // Fetch the latest content model from Contentful
