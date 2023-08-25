@@ -6,7 +6,7 @@ import 'content_model.dart';
 import '../utils/logger.dart';
 
 class LocalStore {
-  late Database? _db;
+  Database? _db;
 
   // Open the database
   Future<void> open() async {
@@ -86,7 +86,10 @@ class LocalStore {
 
   Future<List<Map<String, dynamic>>> queryByField(
       String table, String field, String value) async {
-    return await _db!.query(table, where: '$field = ?', whereArgs: [value]);
+    if (_db == null) {
+      throw Exception("Database not initialized!");
+    }
+    return await _db.query(table, where: '$field = ?', whereArgs: [value]);
   }
 
   Future<void> addToInventory(String id, String contentType) async {
