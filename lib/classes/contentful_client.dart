@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ContentfulClient {
@@ -25,6 +26,8 @@ class ContentfulClient {
   Future<Map<String, dynamic>> fetchContentModel() async {
     final url = nextSyncUrl ??
         'https://cdn.contentful.com/spaces/$spaceId/environments/master/sync?initial=true&access_token=$accessToken';
+
+    logger.i("Checking URL: $url");
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

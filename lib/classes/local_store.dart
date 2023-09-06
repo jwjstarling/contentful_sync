@@ -10,6 +10,7 @@ class LocalStore {
 
   // Open the database
   Future<void> open() async {
+        print("open db");
     final dir = await getApplicationDocumentsDirectory();
     final path = '${dir.path}/contentful.db';
     _db = await openDatabase(path, version: 1);
@@ -61,7 +62,10 @@ class LocalStore {
   }
 
   Future<List<Map<String, dynamic>>> fetch(String table) async {
-    return await _db.query(table);
+    if (_db == null) {
+      await open();  // Ensure the database is opened.
+    }
+    return await _db!.query(table);
   }
 
   Future<void> delete(String table, String id) async {
@@ -75,6 +79,12 @@ class LocalStore {
 
   Future<List<Map<String, dynamic>>> queryByField(
       String table, String field, String value) async {
+            print("queryByField");
+            print(_db);
+    if (_db == null) {
+          print("db is null");
+      await open();  // Ensure the database is opened.
+    }
     return await _db.query(table, where: '$field = ?', whereArgs: [value]);
   }
 
@@ -102,5 +112,12 @@ class LocalStore {
     var tables =
         await _db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
     logger.i('Existing tables: ${tables.map((t) => t['name']).join(', ')}');
+  }
+
+  Future<List<Map<String, dynamic>>> queryWithWhereClause(String table, String whereClause, List<String> whereArgs) async {
+  if (_db == null) {
+    await open();  // Ensure the database is opened.
+  }
+  return await _db.query(table, where: whereClause, whereArgs: whereArgs);
   }
 }
