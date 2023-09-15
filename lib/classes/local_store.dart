@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'content_model.dart';
 import '../utils/logger.dart';
 
@@ -10,10 +8,11 @@ class LocalStore {
 
   // Open the database
   Future<void> open() async {
-        print("open db");
+    
     final dir = await getApplicationDocumentsDirectory();
     final path = '${dir.path}/contentful.db';
     _db = await openDatabase(path, version: 1);
+    logger.i("Opening database: $_db");
 
     await _ensureInventoryTableExists(); // Creates an inventory table which contains ID and ContentType so we can use this to work out which items to delete from correct table if necessary
   }
@@ -26,10 +25,12 @@ class LocalStore {
   }
 
   Future<void> _ensureInventoryTableExists() async {
+    logger.i("Checking Inventory Table");
     final tables = await _db.query('sqlite_master',
         where: 'type = ? AND name = ?', whereArgs: ['table', 'inventory']);
 
     if (tables.isEmpty) {
+      logger.i("Inventory Table doesn't exist - creating...");
       // Create the inventory table
       await _db.execute('''
       CREATE TABLE inventory (
@@ -79,21 +80,22 @@ class LocalStore {
 
   Future<List<Map<String, dynamic>>> queryByField(
       String table, String field, String value) async {
-            print("queryByField");
-            print(_db);
+      logger.i("Querying by Field: $field with value: $value");
+
     if (_db == null) {
-          print("db is null");
       await open();  // Ensure the database is opened.
     }
     return await _db.query(table, where: '$field = ?', whereArgs: [value]);
   }
 
   Future<void> addToInventory(String id, String contentType) async {
+    logger.i("Adding Content Item to Inventory with ID: $id and Content Type: $contentType ");
     await _db.insert('inventory', {'id': id, 'contentType': contentType},
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> removeFromInventory(String id) async {
+    logger.i("Deleting Content Item to Inventory with ID: $id");
     await _db.delete('inventory', where: 'id = ?', whereArgs: [id]);
     logger.w(
         'Item with ID $id deleted from Table:Inventory'); // Warning level for deletions
@@ -112,6 +114,18 @@ class LocalStore {
     var tables =
         await _db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
     logger.i('Existing tables: ${tables.map((t) => t['name']).join(', ')}');
+  }
+
+  Future<void> printTableContents(String tableName) async {
+    if (_db == null) {
+      await open();  // Ensure the database is opened.
+    }
+
+    final List<Map<String, dynamic>> maps = await _db.query(tableName);
+
+    for (var i = 0; i < maps.length; i++) {
+      logger.i('Row $i: ${maps[i]}');
+    }
   }
 
   Future<List<Map<String, dynamic>>> queryWithWhereClause(String table, String whereClause, List<String> whereArgs) async {
